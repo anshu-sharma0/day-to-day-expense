@@ -24,6 +24,7 @@
     "mongodb": "^7.0.0",
     "mongoose": "^8.19.3",
     "next": "16.0.1",
+    "next-pwa": "^5.6.0",
     "react": "19.2.0",
     "react-day-picker": "^9.11.1",
     "react-dom": "19.2.0",
@@ -35,6 +36,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/next-pwa": "^5.6.9",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
