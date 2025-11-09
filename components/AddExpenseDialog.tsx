@@ -22,33 +22,31 @@ interface AddExpenseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   categories: Category[];
+  onExpenseAdded: (expense: any) => void; // 👈 added prop
 }
 
 export const AddExpenseDialog = ({
   open,
   onOpenChange,
   categories,
+  onExpenseAdded,
 }: AddExpenseDialogProps) => {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [categoryId, setCategoryId] = useState<string>("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!amount || !description || !categoryId) {
-      setError("Please fill in all fields");
       toast.error("Please fill in all fields");
       return;
     }
 
     try {
       setLoading(true);
-      setError(null);
-
       const res = await fetch("/api/expenses", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -65,15 +63,16 @@ export const AddExpenseDialog = ({
         throw new Error(err.error || "Failed to add expense");
       }
 
+      const newExpense = await res.json();
+      onExpenseAdded(newExpense); // 👈 instantly update UI
       toast.success("Expense added successfully");
+
       setAmount("");
       setDescription("");
       setDate(new Date().toISOString().split("T")[0]);
       setCategoryId("");
       onOpenChange(false);
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || "Something went wrong");
       toast.error(err.message || "Something went wrong");
     } finally {
       setLoading(false);
@@ -82,7 +81,7 @@ export const AddExpenseDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[90%] max-w-md sm:max-w-lg md:max-w-xl lg:max-w-2xl bg-card border border-border shadow-xl rounded-2xl p-6 sm:p-8 transition-all duration-300 ease-in-out">
+      <DialogContent className="w-[90%] max-w-md sm:max-w-lg md:max-w-xl bg-card border border-border shadow-xl rounded-2xl p-6 sm:p-8 transition-all duration-300">
         <DialogHeader>
           <DialogTitle className="text-lg sm:text-xl font-semibold text-card-foreground text-center">
             Add New Expense
@@ -90,73 +89,54 @@ export const AddExpenseDialog = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-5 mt-4">
-          {error && (
-            <div className="text-red-600 text-sm text-center font-medium">
-              {error}
-            </div>
-          )}
-
           <div className="space-y-2">
-            <Label htmlFor="amount" className="text-sm font-medium">
-              Amount (₹)
-            </Label>
+            <Label htmlFor="amount">Amount (₹)</Label>
             <Input
               id="amount"
               type="number"
               step="0.01"
-              placeholder="0.00"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               required
-              className="w-full rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary transition-all"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium">
-              Description
-            </Label>
+            <Label htmlFor="description">Description</Label>
             <Input
               id="description"
-              placeholder="What did you spend on?"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
-              className="w-full rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary transition-all"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="date" className="text-sm font-medium">
-              Date
-            </Label>
+            <Label htmlFor="date">Date</Label>
             <Input
               id="date"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
-              className="w-full rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary transition-all"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="category" className="text-sm font-medium">
-              Category
-            </Label>
-            <Select value={categoryId} onValueChange={setCategoryId} required>
-              <SelectTrigger className="w-full rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary transition-all">
+            <Label>Category</Label>
+            <Select value={categoryId} onValueChange={setCategoryId}>
+              <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
-              <SelectContent className="max-h-60 overflow-y-auto">
-                {categories.map((category) => (
-                  <SelectItem key={category._id} value={category._id}>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat._id} value={cat._id}>
                     <div className="flex items-center gap-2">
                       <div
                         className="h-4 w-4 rounded"
-                        style={{ backgroundColor: category.color }}
+                        style={{ backgroundColor: cat.color }}
                       />
-                      {category.name}
+                      {cat.name}
                     </div>
                   </SelectItem>
                 ))}
@@ -164,11 +144,7 @@ export const AddExpenseDialog = ({
             </Select>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full py-3 text-base font-medium rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground transition-transform active:scale-95"
-            disabled={loading}
-          >
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Adding..." : "Add Expense"}
           </Button>
         </form>

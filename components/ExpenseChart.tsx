@@ -96,14 +96,6 @@ export const ExpenseChart = ({ data }: ExpenseChartProps) => {
               </PieChart>
             </ResponsiveContainer>
 
-            <div className="mt-4 text-center">
-              <p className="text-sm text-muted-foreground">
-                Total Spending:{" "}
-                <span className="font-semibold text-foreground">
-                  ₹{total.toFixed(2)}
-                </span>
-              </p>
-            </div>
           </div>
         )}
       </CardContent>

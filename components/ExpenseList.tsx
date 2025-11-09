@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { format } from "date-fns";
 import { useState } from "react";
 import { EditExpenseDialog } from "./EditExpenseDialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
 
 interface ExpenseListProps {
   expenses: any[];
@@ -27,6 +28,7 @@ const categoryIcons: Record<string, any> = {
 
 export const ExpenseList = ({ expenses, categories, onExpensesChange }: ExpenseListProps) => {
   const [editingExpense, setEditingExpense] = useState<any | null>(null);
+  const [deletingExpense, setDeletingExpense] = useState<any>(null);
 
   const handleDelete = async (id: string) => {
     if (!id) {
@@ -38,6 +40,7 @@ export const ExpenseList = ({ expenses, categories, onExpensesChange }: ExpenseL
       if (!res.ok) throw new Error("Failed to delete expense");
       toast.success("Expense deleted successfully");
       onExpensesChange();
+      setDeletingExpense(null);
     } catch (err) {
       toast.error("Failed to delete expense");
       console.error(err);
@@ -126,11 +129,36 @@ export const ExpenseList = ({ expenses, categories, onExpensesChange }: ExpenseL
                           variant="ghost"
                           size="icon"
                           className="hover:bg-destructive/10 active:scale-95 transition"
-                          onClick={() => handleDelete(expense._id)}
+                          onClick={() => setDeletingExpense(expense)} // open modal
                           aria-label="Delete Expense"
                         >
                           <Trash2 className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />
                         </Button>
+
+                        {/* Confirm Delete Modal */}
+                        <Dialog open={!!deletingExpense} onOpenChange={(open) => !open && setDeletingExpense(null)}>
+                          <DialogContent className="sm:max-w-[400px]">
+                            <DialogHeader>
+                              <DialogTitle>Delete Expense</DialogTitle>
+                            </DialogHeader>
+                            <p className="text-sm text-muted-foreground">
+                              Are you sure you want to delete{" "}
+                              <span className="font-medium text-foreground">{deletingExpense?.description}</span>? This action
+                              cannot be undone.
+                            </p>
+                            <DialogFooter className="flex justify-end gap-2 mt-4">
+                              <Button variant="outline" onClick={() => setDeletingExpense(null)}>
+                                Cancel
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                onClick={() => handleDelete(deletingExpense._id || deletingExpense.id)}
+                              >
+                                Delete
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </div>
                   </div>

@@ -64,6 +64,11 @@ const Dashboard = () => {
     }
   };
 
+  // 👇 when new expense added
+  const handleExpenseAdded = (newExpense: Expense) => {
+    setExpenses((prev) => [newExpense, ...prev]);
+  };
+
   const handleSignOut = () => router.push("/login");
 
   const totalExpenses = expenses.reduce((sum, expense) => sum + Number(expense.amount), 0);
@@ -148,7 +153,7 @@ const Dashboard = () => {
           </Button>
         </div>
 
-        {/* Responsive Stats Cards */}
+        {/* Stats */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {[
             {
@@ -210,6 +215,7 @@ const Dashboard = () => {
           open={isAddDialogOpen}
           onOpenChange={setIsAddDialogOpen}
           categories={categories}
+          onExpenseAdded={handleExpenseAdded} // 👈 new prop
         />
       </main>
     </div>
